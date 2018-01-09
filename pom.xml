@@ -12,6 +12,7 @@
   <artifactId>infoblox-java</artifactId>
   <version>0.0.1</version>
   <name>infoblox-java</name>
+  <packaging>jar</packaging>
   <description>A pure java API for Infoblox DNS appliance.</description>
   <url>https://github.com/oneops/infoblox-java</url>
 
