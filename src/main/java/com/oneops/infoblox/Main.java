@@ -10,14 +10,13 @@ public class Main {
   public static void main(String[] args) throws Exception {
 
     InfobloxClient client = InfobloxClient.builder()
-        .endPoint("localhost:8888"/*"infoblox-api.walmart.com"*/)
+        .endPoint("localhost:8888")
         .userName("")
         .password("")
-        .timeout(5)
         .build();
 
     client.getAuthZones().forEach(System.out::println);
     System.out.println("--------------");
-    client.getAuthZones("xxx.com").forEach(System.out::println);
+    client.getAuthZones("domain.com").forEach(System.out::println);
   }
 }
