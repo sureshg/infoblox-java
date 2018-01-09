@@ -8,7 +8,6 @@ import com.google.auto.value.AutoValue;
 import com.oneops.infoblox.model.Error;
 import com.oneops.infoblox.model.JsonAdapterFactory;
 import com.oneops.infoblox.model.Redacted;
-import com.oneops.infoblox.model.SearchType;
 import com.oneops.infoblox.model.zone.ZoneAuth;
 import com.squareup.moshi.Moshi;
 import java.io.IOException;
@@ -246,14 +245,14 @@ public abstract class InfobloxClient {
   }
 
   /**
-   * Search all authoritative zones for the given fqdn name.
+   * Search all authoritative zones for the given fqdn regex.
    *
    * @param fqdn regex pattern.
    * @return list of {@link ZoneAuth}
    * @throws IOException if a problem occurred talking to the infoblox.
    */
-  public List<ZoneAuth> getAuthZones(String fqdn,SearchType type) throws IOException {
-    return exec(infoblox.getAuthZone(fqdn,type)).result();
+  public List<ZoneAuth> getAuthZones(String fqdn) throws IOException {
+    return exec(infoblox.getAuthZone(fqdn)).result();
   }
 
   /**

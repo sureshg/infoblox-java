@@ -14,6 +14,9 @@ public enum SearchModifier {
   LT("<"),
   GT(">");
 
+  /**
+   * Modifier value to be used in search.
+   */
   private final String value;
 
   SearchModifier(String value) {
