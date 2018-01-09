@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>infoblox-java</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.1-SNAPSHOT</version>
   <name>infoblox-java</name>
   <packaging>jar</packaging>
   <description>A pure java API for Infoblox DNS appliance.</description>
@@ -136,8 +136,8 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
-    <plugins>
 
+    <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
