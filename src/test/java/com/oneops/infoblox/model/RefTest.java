@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -13,44 +14,54 @@ import org.junit.jupiter.api.Test;
  *
  * @author Suresh G
  */
+@DisplayName("Infoblox WAPI Object reference tests.")
 class RefTest {
 
-  private Ref refObj1;
-  private Ref refObj2;
-  private Ref refObj3;
+  private Ref netViewRef;
+  private Ref hostRef;
+  private Ref ipv4Ref;
+  private Ref ptrRef;
 
   @BeforeEach
   void setUp() {
-    refObj1 = Ref.of("networkview/ZG5zLm5ldHdvcmtfdmlldyQw:default");
-    refObj2 = Ref.of("record:host/ZG5zLmhvc3QkLl9vc3Qx:host1.test.com/default");
-    refObj3 = Ref.of("record:ptr/ZG5zLmJpbmRfcHRTAuMTAuMTAuMi5zZXJ2ZXIuaW5mby5jb20");
+    netViewRef = Ref.of("networkview/ZG5zLm5ldHdvcmtfdmlldyQw:default");
+    hostRef = Ref.of("record:host/ZG5zLmhvc10ZXN0LWhvc3Qx:test-host1.oneops.com/Internal");
+    ptrRef = Ref.of("record:ptr/ZG5zLmJpbmRfcHRTAuMTAuMTAuMi5zZXJ2ZXIuaW5mby5jb20");
+    ipv4Ref =
+        Ref.of(
+            "record:host_ipv4addr/YWRkcmVzcyQuX2RlZmF1bHQuY29tLndhbG1hcnQub25lb3BzLXRl:10.10.10.20/test-host1.oneops.com/Internal");
   }
 
   @Test
   void create() {
-    assertNotNull(refObj1);
-    assertNotNull(refObj2);
-    assertNotNull(refObj3);
+    assertNotNull(netViewRef);
+    assertNotNull(hostRef);
+    assertNotNull(ipv4Ref);
+    assertNotNull(ptrRef);
   }
 
   @Test
   void wapiType() {
-    assertEquals("networkview", refObj1.wapiType());
-    assertEquals("record:host", refObj2.wapiType());
-    assertEquals("record:ptr", refObj3.wapiType());
+    assertEquals("networkview", netViewRef.wapiType());
+    assertEquals("record:host", hostRef.wapiType());
+    assertEquals("record:ptr", ptrRef.wapiType());
+    assertEquals("record:host_ipv4addr", ipv4Ref.wapiType());
   }
 
   @Test
   void refData() {
-    assertEquals("ZG5zLm5ldHdvcmtfdmlldyQw", refObj1.refData());
-    assertEquals("ZG5zLmhvc3QkLl9vc3Qx", refObj2.refData());
-    assertEquals("ZG5zLmJpbmRfcHRTAuMTAuMTAuMi5zZXJ2ZXIuaW5mby5jb20", refObj3.refData());
+    assertEquals("ZG5zLm5ldHdvcmtfdmlldyQw", netViewRef.refData());
+    assertEquals("ZG5zLmhvc10ZXN0LWhvc3Qx", hostRef.refData());
+    assertEquals("ZG5zLmJpbmRfcHRTAuMTAuMTAuMi5zZXJ2ZXIuaW5mby5jb20", ptrRef.refData());
+    assertEquals("YWRkcmVzcyQuX2RlZmF1bHQuY29tLndhbG1hcnQub25lb3BzLXRl", ipv4Ref.refData());
   }
 
   @Test
   void names() {
-    assertEquals(Collections.singletonList("default"), refObj1.names());
-    assertEquals(Arrays.asList("host1.test.com", "default"), refObj2.names());
-    assertEquals(Collections.emptyList(), refObj3.names());
+    assertEquals(Collections.singletonList("default"), netViewRef.names());
+    assertEquals(Collections.emptyList(), ptrRef.names());
+    assertEquals(Arrays.asList("test-host1.oneops.com", "Internal"), hostRef.names());
+    assertEquals(
+        Arrays.asList("10.10.10.20", "test-host1.oneops.com", "Internal"), ipv4Ref.names());
   }
 }

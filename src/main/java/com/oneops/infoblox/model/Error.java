@@ -71,9 +71,7 @@ public abstract class Error {
     return create(error, String.valueOf(code), "", "");
   }
 
-  /**
-   * Json adapter for {@link Error} type, used by Moshi for JSON [de]serialization.
-   */
+  /** Json adapter for {@link Error} type, used by Moshi for JSON [de]serialization. */
   public static JsonAdapter<Error> jsonAdapter(Moshi moshi) {
     return new AutoValue_Error.MoshiJsonAdapter(moshi);
   }

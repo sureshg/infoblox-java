@@ -29,8 +29,7 @@ public class InfobloxException extends IOException {
   }
 
   /**
-   * Constructs a new IBA exception with the specified error message
-   * and cause.
+   * Constructs a new IBA exception with the specified error message and cause.
    *
    * @param message error message.
    * @param cause the cause.

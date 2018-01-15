@@ -9,14 +9,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * WAPI Object reference. WAPI returns this reference when an object is
- * created, modified, deleted or read. An object reference is a string with
- * the following format, without spaces:
- * <b>wapitype / refdata [ : name1 [ { / nameN }... ] ]</b>
+ * WAPI Object reference. WAPI returns this reference when an object is created, modified, deleted
+ * or read. An object reference is a string with the following format, without spaces: <b>wapitype /
+ * refdata [ : name1 [ { / nameN }... ] ]</b>
  *
  * @author Suresh G
  */
-
 @AutoValue
 public abstract class Ref {
 
@@ -59,7 +57,7 @@ public abstract class Ref {
   /**
    * Returns the list of names from ref object.
    *
-   * @return list of names or  <code>empty list</code> if can't get it.
+   * @return list of names or <code>empty list</code> if can't get it.
    */
   public Collection<String> names() {
     String ref = value().split("/", 2)[1];
@@ -71,9 +69,7 @@ public abstract class Ref {
     return names;
   }
 
-  /**
-   * Json adapter for {@link Error} type, used by Moshi for JSON [de]serialization.
-   */
+  /** Json adapter for {@link Error} type, used by Moshi for JSON [de]serialization. */
   public static JsonAdapter<Ref> jsonAdapter(Moshi moshi) {
     return new AutoValue_Ref.MoshiJsonAdapter(moshi);
   }
