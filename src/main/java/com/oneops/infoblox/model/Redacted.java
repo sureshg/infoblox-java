@@ -15,6 +15,4 @@ import java.lang.annotation.Target;
  */
 @Retention(SOURCE)
 @Target({METHOD, PARAMETER, FIELD})
-public @interface Redacted {
-
-}
+public @interface Redacted {}

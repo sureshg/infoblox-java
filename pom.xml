@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>infoblox-java</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>infoblox-java</name>
   <packaging>jar</packaging>
   <description>A pure java API for Infoblox DNS appliance.</description>
@@ -54,6 +54,7 @@
     <junit.version>5.1.0-M1</junit.version>
     <jsr305.version>3.0.2</jsr305.version>
     <java.version>1.8</java.version>
+    <dnsjava.version>2.1.8</dnsjava.version>
     <maven.build.timestamp.format>yyyy-MM-dd hh:mm:ss a z</maven.build.timestamp.format>
   </properties>
 
@@ -126,6 +127,12 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>dnsjava</groupId>
+      <artifactId>dnsjava</artifactId>
+      <version>${dnsjava.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

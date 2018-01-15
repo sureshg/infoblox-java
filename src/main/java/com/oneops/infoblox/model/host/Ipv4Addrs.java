@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
 /**
- * Host IPv4 object.
+ * Host record response IPv4 object.
  *
  * @author Suresh G
  */
@@ -24,8 +24,8 @@ public abstract class Ipv4Addrs {
   @Json(name = "configure_for_dhcp")
   public abstract boolean configureForDhcp();
 
-  public static Ipv4Addrs create(String ref, String host, String ipv4Addr,
-      boolean configureForDhcp) {
+  public static Ipv4Addrs create(
+      String ref, String host, String ipv4Addr, boolean configureForDhcp) {
     return new AutoValue_Ipv4Addrs(ref, host, ipv4Addr, configureForDhcp);
   }
 
