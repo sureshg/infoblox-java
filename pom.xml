@@ -135,6 +135,13 @@
       <version>${dnsjava.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- For testing HTTP, HTTPS, and HTTP/2 clients. -->
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>${okhttp.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

@@ -1,6 +1,7 @@
 package com.oneops.infoblox;
 
 import static com.oneops.infoblox.util.IPAddrs.requireIPv4;
+import static com.oneops.infoblox.util.IPAddrs.requireIPv6;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -12,6 +13,7 @@ import com.oneops.infoblox.model.JsonAdapterFactory;
 import com.oneops.infoblox.model.Redacted;
 import com.oneops.infoblox.model.SearchModifier;
 import com.oneops.infoblox.model.a.ARec;
+import com.oneops.infoblox.model.aaaa.AAAA;
 import com.oneops.infoblox.model.host.Host;
 import com.oneops.infoblox.model.host.HostIPv4Req;
 import com.oneops.infoblox.model.host.HostReq;
@@ -133,13 +135,13 @@ public abstract class InfobloxClient {
                   return chain.proceed(req);
                 });
 
+    if (!tlsVerify()) {
+      okBuilder.hostnameVerifier((host, session) -> true);
+    }
+
     if (debug()) {
       CurlLoggingInterceptor logIntcp = new CurlLoggingInterceptor(s -> log.info(s));
       okBuilder.addNetworkInterceptor(logIntcp);
-    }
-
-    if (!tlsVerify()) {
-      okBuilder.hostnameVerifier((host, session) -> true);
     }
     OkHttpClient okHttp = okBuilder.build();
 
@@ -211,7 +213,7 @@ public abstract class InfobloxClient {
     } else {
       Error err;
       String contentType = res.headers().get("Content-Type");
-      if (contentType != null && contentType.equalsIgnoreCase("application/json")) {
+      if (contentType != null && "application/json".equalsIgnoreCase(contentType)) {
         err = errResConverter.convert(requireNonNull(res.errorBody()));
       } else {
         err = Error.create("Request failed, " + res.message(), res.code());
@@ -232,6 +234,8 @@ public abstract class InfobloxClient {
     }
     return buf.append(endPoint()).append("/wapi/v").append(wapiVersion()).append("/").toString();
   }
+
+  ////// Auth Zone Record //////
 
   /**
    * Fetch all Authoritative Zones.
@@ -269,6 +273,8 @@ public abstract class InfobloxClient {
   public List<ZoneAuth> getAuthZones(String domainName) throws IOException {
     return getAuthZones(domainName, SearchModifier.NONE);
   }
+
+  ////// Host Record //////
 
   /**
    * Get host information for the given domain name and search option.
@@ -328,6 +334,8 @@ public abstract class InfobloxClient {
     }
   }
 
+  ////// A Record //////
+
   /**
    * Get address records (A Record) for the given domain name and search option.
    *
@@ -373,19 +381,141 @@ public abstract class InfobloxClient {
    * Deletes address record with given domain name.
    *
    * @param domainName fqdn for the A record.
+   * @return list of A record obj references deleted.
    * @throws IOException if a problem occurred talking to the infoblox.
    */
-  public void deleteARec(String domainName) throws IOException {
-    for (ARec rec : getARec(domainName)) {
-      String addrRef = rec.ref();
-      if (!addrRef.contains(domainName)) {
-        throw new IllegalStateException("Received unexpected A record ref: " + addrRef);
-      }
-
-      String resRef = exec(infoblox.deleteRef(addrRef)).result();
-      log.warning("Deleting A Record res ref: " + resRef);
-    }
+  public List<String> deleteARec(String domainName) throws IOException {
+    return getARec(domainName)
+        .stream()
+        .map(ARec::ref)
+        .filter(ref -> ref.contains(domainName))
+        .map(
+            ref -> {
+              try {
+                return exec(infoblox.deleteRef(ref)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error deleting A record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
   }
+
+  /**
+   * Modify the domain name of A record with given name.
+   *
+   * @param domainName fqdn for the A record.
+   * @param newDomainName new fqdn.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<ARec> modifyARec(String domainName, String newDomainName) throws IOException {
+    return getARec(domainName)
+        .stream()
+        .map(ARec::ref)
+        .filter(ref -> ref.contains(domainName))
+        .map(
+            ref -> {
+              Map<String, String> req = new HashMap<>(1);
+              req.put("name", newDomainName);
+              try {
+                return exec(infoblox.modifyARec(ref, req)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error modifying A record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
+  }
+
+  ////// AAAA Record //////
+  /**
+   * Get IPv6 address records (AAAA) for the given domain name and search option.
+   *
+   * @param domainName fqdn
+   * @return list of matching {@link AAAA}
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<AAAA> getAAAARec(String domainName, SearchModifier modifier) throws IOException {
+    requireNonNull(domainName, "Domain name is null");
+    Map<String, String> options = new HashMap<>(1);
+    options.put("name" + modifier.getValue(), domainName);
+    return exec(infoblox.queryAAAARec(options)).result();
+  }
+
+  /**
+   * Get IPv6 address records (AAAA) for the given domain name.
+   *
+   * @param domainName fqdn
+   * @return list of matching {@link AAAA}
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<AAAA> getAAAARec(String domainName) throws IOException {
+    return getAAAARec(domainName, SearchModifier.NONE);
+  }
+
+  /**
+   * Creates an IPv6 address record (AAAA Record)
+   *
+   * @param domainName FQDN
+   * @param ipv6Address IPv6 address
+   * @return {@link AAAA} address record.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public AAAA createAAAARec(String domainName, String ipv6Address) throws IOException {
+    requireIPv6(ipv6Address);
+    Map<String, String> req = new HashMap<>(2);
+    req.put("name", domainName);
+    req.put("ipv6addr", ipv6Address);
+    return exec(infoblox.createAAAARec(req)).result();
+  }
+
+  /**
+   * Deletes IPv6 address record with given domain name.
+   *
+   * @param domainName fqdn for the AAAA record.
+   * @return list of A record obj references deleted.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<String> deleteAAAARec(String domainName) throws IOException {
+    return getAAAARec(domainName)
+        .stream()
+        .map(AAAA::ref)
+        .filter(ref -> ref.contains(domainName))
+        .map(
+            ref -> {
+              try {
+                return exec(infoblox.deleteRef(ref)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error deleting AAAA record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Modify the domain name of AAAA record with given name.
+   *
+   * @param domainName fqdn for the AAAA record.
+   * @param newDomainName new fqdn.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<AAAA> modifyAAAARec(String domainName, String newDomainName) throws IOException {
+    return getAAAARec(domainName)
+        .stream()
+        .map(AAAA::ref)
+        .filter(ref -> ref.contains(domainName))
+        .map(
+            ref -> {
+              Map<String, String> req = new HashMap<>(1);
+              req.put("name", newDomainName);
+              try {
+                return exec(infoblox.modifyAAAARec(ref, req)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error modifying AAAA record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
+  }
+
+  ////// CNAME Record //////
 
   /**
    * Returns the builder for {@link InfobloxClient} with default values for un-initialized optional

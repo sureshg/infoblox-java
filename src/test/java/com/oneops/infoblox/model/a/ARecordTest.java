@@ -34,7 +34,9 @@ class ARecordTest {
 
   private static InfobloxClient client;
 
-  private String fqdn = "oneops-test-arec1." + domain();
+  private String fqdn = "oneops-test-a1." + domain();
+
+  private String newFqdn = "oneops-test-a1-mod." + domain();
 
   @BeforeAll
   static void setUp() {
@@ -53,6 +55,7 @@ class ARecordTest {
   @BeforeEach
   void clean() throws IOException {
     client.deleteARec(fqdn);
+    client.deleteARec(newFqdn);
   }
 
   @Test
@@ -60,28 +63,43 @@ class ARecordTest {
     List<ARec> aRec = client.getARec(fqdn);
     assertTrue(aRec.isEmpty());
 
-    String ip = "10.10.10.30";
+    // Creates A Record
+    String ip = "10.10.10.22";
     ARec newARec = client.createARec(fqdn, ip);
     assertEquals(ip, newARec.ipv4Addr());
     assertEquals(Collections.singletonList(ip), digARecord(fqdn));
 
-    client.deleteARec(fqdn);
+    // Modify A Record
+    List<ARec> modifedARec = client.modifyARec(fqdn, newFqdn);
+    assertTrue(modifedARec.size() == 1);
+    // Now new Fqdn should resolve the IP.
+    assertEquals(Collections.singletonList(ip), digARecord(newFqdn));
+
+    // Delete A Record
+    List<String> delARec = client.deleteARec(fqdn);
+    assertTrue(delARec.size() == 0);
+    delARec = client.deleteARec(newFqdn);
+    assertTrue(delARec.size() == 1);
   }
 
   /**
    * Queries default DNS server for the given fqdn and A record type.
+   *
+   * <p>Warning: Writing test cases depending too much on DNS resolution might break the test cases,
+   * as it usually cached and take time to propagate the DNS entries.
    *
    * @param fqdn name.
    * @return list of mapped ip address strings.
    * @throws IOException
    */
   private List<String> digARecord(String fqdn) throws IOException {
-    Lookup l = new Lookup(fqdn, Type.A);
-    if (nameServer() != null) {
-      l.setResolver(new SimpleResolver(nameServer()));
+    Lookup dig = new Lookup(fqdn, Type.A);
+    String resolver = nameServer();
+    if (resolver != null) {
+      dig.setResolver(new SimpleResolver(resolver));
     }
 
-    Record[] resolvedRecs = l.run();
+    Record[] resolvedRecs = dig.run();
     return resolvedRecs != null
         ? Arrays.stream(resolvedRecs)
             .map(ARecord.class::cast)
