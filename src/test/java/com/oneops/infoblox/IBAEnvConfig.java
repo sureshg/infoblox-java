@@ -27,12 +27,22 @@ public class IBAEnvConfig {
     return getEnv("iba_password");
   }
 
-  /** IBA user password */
+  /**
+   * IBA root domain (root label).
+   *
+   * <p>Warning: As per the RFC fully-qualified domain names (fqdn) end with a dot ('.'), but
+   * infoblox somehow doesn't allow it as a valid domain name. If you use dot at the end, you will
+   * get <b>IBDataConflictError: IB.Data.Conflict:Invalid domain name</b> or <b>A domain label
+   * either starts or ends with an invalid character</b> error.
+   *
+   * @see <a href="http://www.dns-sd.org/trailingdotsindomainnames.html">Trailing Dots in Domain
+   *     Names</a>
+   */
   public static String domain() {
     return getEnv("iba_domain", "oneops.com");
   }
 
-  /** Name resolver for testing. */
+  /** Name server to query for testing. */
   public static String nameServer() {
     return getEnv("iba_nameserver");
   }
@@ -54,9 +64,10 @@ public class IBAEnvConfig {
   public static String errMsg() {
     return "Infoblox (IBA) env config not set. Skipping the tests.\n"
         + "In order to run the tests, set the following env vars\n"
-        + " * iba_host      : Infoblox Hostname\n"
-        + " * iba_user      : Infoblox Username\n"
-        + " * iba_password  : Infoblox Password\n"
-        + " * iba_domain    : Infoblox Domain name";
+        + " * iba_host        : Infoblox Hostname\n"
+        + " * iba_user        : Infoblox Username\n"
+        + " * iba_password    : Infoblox Password\n"
+        + " * iba_domain      : Infoblox Domain name\n"
+        + " * iba_nameserver  : Name server to query";
   }
 }

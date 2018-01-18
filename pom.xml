@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>infoblox-java</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <name>infoblox-java</name>
   <packaging>jar</packaging>
   <description>A pure java API for Infoblox DNS appliance.</description>

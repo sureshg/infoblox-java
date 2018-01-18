@@ -41,7 +41,7 @@ public interface Infoblox {
 
   /** Delete Record */
   @DELETE("./{ref}")
-  Call<Result<String>> deleteRef(@Path(value = "ref", encoded = true) String objRef);
+  Call<Result<String>> deleteRef(@Path(value = "ref", encoded = true) String ref);
 
   /** A Record */
   @GET("./record:a")
@@ -52,7 +52,7 @@ public interface Infoblox {
 
   @PUT("./{ref}?_return_fields=name,ipv4addr,view")
   Call<Result<ARec>> modifyARec(
-      @Path(value = "ref", encoded = true) String aRef, @Body Map<String, String> req);
+      @Path(value = "ref", encoded = true) String ref, @Body Map<String, String> req);
 
   /** AAAA Record */
   @GET("./record:aaaa")
@@ -63,7 +63,7 @@ public interface Infoblox {
 
   @PUT("./{ref}?_return_fields=name,ipv6addr,view")
   Call<Result<AAAA>> modifyAAAARec(
-      @Path(value = "ref", encoded = true) String aRef, @Body Map<String, String> req);
+      @Path(value = "ref", encoded = true) String ref, @Body Map<String, String> req);
 
   /** CNAME Record */
   @GET("./record:cname")
@@ -74,7 +74,7 @@ public interface Infoblox {
 
   @PUT("./{ref}?_return_fields=name,canonical,view")
   Call<Result<CNAME>> modifyCNAMERec(
-      @Path(value = "ref", encoded = true) String aRef, @Body Map<String, String> req);
+      @Path(value = "ref", encoded = true) String ref, @Body Map<String, String> req);
 
   @POST("logout")
   Call<Void> logout();

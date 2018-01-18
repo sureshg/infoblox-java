@@ -1,8 +1,9 @@
-package com.oneops.infoblox.model.a;
+package com.oneops.infoblox.model.aaaa;
 
 import static com.oneops.infoblox.IBAEnvConfig.domain;
 import static com.oneops.infoblox.IBAEnvConfig.isValid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -19,17 +20,17 @@ import org.junit.jupiter.api.Test;
 import org.xbill.DNS.Type;
 
 /**
- * Address record tests.
+ * AAAA record tests.
  *
- * @author Suresh G
+ * @author Suresh
  */
-@DisplayName("Infoblox address record tests.")
-class ARecordTest {
+@DisplayName("Infoblox IPv6 address record tests.")
+class AAAATest {
 
   private static InfobloxClient client;
 
-  private String fqdn = "oneops-test-a1." + domain();
-  private String newFqdn = "oneops-test-a1-mod." + domain();
+  private String fqdn = "oneops-test-aaaa1." + domain();
+  private String newFqdn = "oneops-test-aaaa1-mod." + domain();
 
   @BeforeAll
   static void setUp() {
@@ -44,34 +45,34 @@ class ARecordTest {
             .build();
   }
 
-  /** Make sure to clean the A record before each test. */
+  /** Make sure to clean the AAAA record before each test. */
   @BeforeEach
   void clean() throws IOException {
-    client.deleteARec(fqdn);
-    client.deleteARec(newFqdn);
+    client.deleteAAAARec(fqdn);
+    client.deleteAAAARec(newFqdn);
   }
 
   @Test
   void create() throws IOException {
-    List<ARec> rec = client.getARec(fqdn);
-    assertTrue(rec.isEmpty());
+    List<AAAA> aaaaRec = client.getAAAARec(fqdn);
+    assertTrue(aaaaRec.isEmpty());
 
-    // Creates A Record
-    String ip = "10.10.10.22";
-    ARec aRec = client.createARec(fqdn, ip);
-    assertEquals(ip, aRec.ipv4Addr());
-    assertEquals(Collections.singletonList(ip), Dig.lookup(fqdn, Type.A));
+    // Creates AAAA Record
+    String ipv6 = "fe80:0:0:0:f0ea:f6ff:fd97:5d51";
+    AAAA newAAAARec = client.createAAAARec(fqdn, ipv6);
+    assertNotNull(newAAAARec.ipv6Addr());
+    assertEquals(Collections.singletonList(ipv6), Dig.lookup(fqdn, Type.AAAA));
 
-    // Modify A Record
-    List<ARec> modifedARec = client.modifyARec(fqdn, newFqdn);
-    assertTrue(modifedARec.size() == 1);
+    // Modify AAAA Record
+    List<AAAA> modAAAARec = client.modifyAAAARec(fqdn, newFqdn);
+    assertTrue(modAAAARec.size() == 1);
     // Now new Fqdn should resolve the IP.
-    assertEquals(Collections.singletonList(ip), Dig.lookup(newFqdn, Type.A));
+    assertEquals(Collections.singletonList(ipv6), Dig.lookup(newFqdn, Type.AAAA));
 
     // Delete A Record
-    List<String> delARec = client.deleteARec(fqdn);
-    assertTrue(delARec.size() == 0);
-    delARec = client.deleteARec(newFqdn);
-    assertTrue(delARec.size() == 1);
+    List<String> delAAAARec = client.deleteAAAARec(fqdn);
+    assertTrue(delAAAARec.size() == 0);
+    delAAAARec = client.deleteAAAARec(newFqdn);
+    assertTrue(delAAAARec.size() == 1);
   }
 }

@@ -14,6 +14,7 @@ import com.oneops.infoblox.model.Redacted;
 import com.oneops.infoblox.model.SearchModifier;
 import com.oneops.infoblox.model.a.ARec;
 import com.oneops.infoblox.model.aaaa.AAAA;
+import com.oneops.infoblox.model.cname.CNAME;
 import com.oneops.infoblox.model.host.Host;
 import com.oneops.infoblox.model.host.HostIPv4Req;
 import com.oneops.infoblox.model.host.HostReq;
@@ -320,18 +321,23 @@ public abstract class InfobloxClient {
    * Deletes IBA host record with given domain name.
    *
    * @param domainName fqdn for the host record.
+   * @return list of deleted host references.
    * @throws IOException if a problem occurred talking to the infoblox.
    */
-  public void deleteHostRec(String domainName) throws IOException {
-    for (Host host : getHostRec(domainName)) {
-      String hostRef = host.ref();
-      if (!hostRef.contains(domainName)) {
-        throw new IllegalStateException("Received unexpected host reference: " + hostRef);
-      }
-
-      String resRef = exec(infoblox.deleteRef(hostRef)).result();
-      log.warning("Deleting host res ref: " + resRef);
-    }
+  public List<String> deleteHostRec(String domainName) throws IOException {
+    return getHostRec(domainName)
+        .stream()
+        .map(Host::ref)
+        .filter(ref -> ref.contains(domainName))
+        .map(
+            ref -> {
+              try {
+                return exec(infoblox.deleteRef(ref)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error deleting Host record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
   }
 
   ////// A Record //////
@@ -516,6 +522,101 @@ public abstract class InfobloxClient {
   }
 
   ////// CNAME Record //////
+
+  /**
+   * Get canonical records (CNAME) for the given alias name and search option.
+   *
+   * @param aliasName fqdn
+   * @return list of matching {@link CNAME}
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<CNAME> getCNameRec(String aliasName, SearchModifier modifier) throws IOException {
+    requireNonNull(aliasName, "Domain name is null");
+    Map<String, String> options = new HashMap<>(1);
+    options.put("name" + modifier.getValue(), aliasName);
+    return exec(infoblox.queryCNAMERec(options)).result();
+  }
+
+  /**
+   * Get canonical records (CNAME) for the given alias name.
+   *
+   * @param aliasName fqdn
+   * @return list of matching {@link CNAME}
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<CNAME> getCNameRec(String aliasName) throws IOException {
+    return getCNameRec(aliasName, SearchModifier.NONE);
+  }
+
+  /**
+   * Creates a canonical record (CNAME Record). CNAME records must always point to another domain
+   * name, never directly to an IP address.
+   *
+   * @param aliasName alias domain name
+   * @param canonicalName Canonical (true/actual) domain name.
+   * @return {@link CNAME} record.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public CNAME createCNameRec(String aliasName, String canonicalName) throws IOException {
+    Map<String, String> req = new HashMap<>(2);
+    req.put("name", aliasName);
+    req.put("canonical", canonicalName);
+    return exec(infoblox.createCNAMERec(req)).result();
+  }
+
+  /**
+   * Deletes canonical record with given alias name.
+   *
+   * @param aliasName alias name to be deleted.
+   * @return list of CNAME record obj references deleted.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<String> deleteCNameRec(String aliasName) throws IOException {
+    return getCNameRec(aliasName)
+        .stream()
+        .map(CNAME::ref)
+        .filter(ref -> ref.contains(aliasName))
+        .map(
+            ref -> {
+              try {
+                return exec(infoblox.deleteRef(ref)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error deleting CNAME record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Modify alias name of the CNAME record with new name.
+   *
+   * @param aliasName alias name.
+   * @param newAliasName new fqdn.
+   * @throws IOException if a problem occurred talking to the infoblox.
+   */
+  public List<CNAME> modifyCNameRec(String aliasName, String newAliasName) throws IOException {
+    return getCNameRec(aliasName)
+        .stream()
+        .map(CNAME::ref)
+        .filter(ref -> ref.contains(aliasName))
+        .map(
+            ref -> {
+              Map<String, String> req = new HashMap<>(1);
+              req.put("name", newAliasName);
+              try {
+                return exec(infoblox.modifyCNAMERec(ref, req)).result();
+              } catch (IOException ioe) {
+                throw new IllegalStateException("Error modifying A record ref: " + ref, ioe);
+              }
+            })
+        .collect(Collectors.toList());
+  }
+
+  ////// TXT Record //////
+
+  ////// PTR Record //////
+
+  ////// SRV Record //////
 
   /**
    * Returns the builder for {@link InfobloxClient} with default values for un-initialized optional
