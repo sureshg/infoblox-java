@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>infoblox-java</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <name>infoblox-java</name>
   <packaging>jar</packaging>
   <description>A pure java API for Infoblox DNS appliance.</description>
@@ -133,6 +133,13 @@
       <groupId>dnsjava</groupId>
       <artifactId>dnsjava</artifactId>
       <version>${dnsjava.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- For testing HTTP, HTTPS, and HTTP/2 clients. -->
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>${okhttp.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
