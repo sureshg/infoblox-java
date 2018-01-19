@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>infoblox-java</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <name>infoblox-java</name>
   <packaging>jar</packaging>
   <description>A pure java API for Infoblox DNS appliance.</description>
@@ -24,7 +24,7 @@
   <scm>
     <developerConnection>scm:git:git@github.com:oneops/infoblox-java.git</developerConnection>
     <url>https://github.com/oneops/infoblox-java</url>
-    <tag>release-1.0.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
