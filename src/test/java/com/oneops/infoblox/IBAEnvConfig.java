@@ -7,22 +7,30 @@ package com.oneops.infoblox;
  */
 public class IBAEnvConfig {
 
-  /** Check if valid inforblox env config available for testing. */
+  /**
+   * Check if valid inforblox env config available for testing.
+   */
   public static boolean isValid() {
     return host() != null && user() != null && password() != null;
   }
 
-  /** Returns IBA host of management interface. */
+  /**
+   * Returns IBA host of management interface.
+   */
   public static String host() {
     return getEnv("iba_host");
   }
 
-  /** IBA user name. */
+  /**
+   * IBA user name.
+   */
   public static String user() {
     return getEnv("iba_user");
   }
 
-  /** IBA user password */
+  /**
+   * IBA user password
+   */
   public static String password() {
     return getEnv("iba_password");
   }
@@ -36,13 +44,15 @@ public class IBAEnvConfig {
    * either starts or ends with an invalid character</b> error.
    *
    * @see <a href="http://www.dns-sd.org/trailingdotsindomainnames.html">Trailing Dots in Domain
-   *     Names</a>
+   * Names</a>
    */
   public static String domain() {
     return getEnv("iba_domain", "oneops.com");
   }
 
-  /** Name server to query for testing. */
+  /**
+   * Name server to query for testing.
+   */
   public static String nameServer() {
     return getEnv("iba_nameserver");
   }
@@ -60,7 +70,9 @@ public class IBAEnvConfig {
     return env != null ? env : defValue;
   }
 
-  /** Common error message for invalid env vars. */
+  /**
+   * Common error message for invalid env vars.
+   */
   public static String errMsg() {
     return "Infoblox (IBA) env config not set. Skipping the tests.\n"
         + "In order to run the tests, set the following env vars\n"

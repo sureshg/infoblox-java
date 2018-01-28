@@ -18,6 +18,7 @@ import com.oneops.infoblox.model.cname.CNAME;
 import com.oneops.infoblox.model.host.Host;
 import com.oneops.infoblox.model.host.HostIPv4Req;
 import com.oneops.infoblox.model.host.HostReq;
+import com.oneops.infoblox.model.ref.RefObject;
 import com.oneops.infoblox.model.zone.ZoneAuth;
 import com.squareup.moshi.Moshi;
 import java.io.IOException;
@@ -56,9 +57,11 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 @AutoValue
 public abstract class InfobloxClient {
 
-  private Logger log = Logger.getLogger(getClass().getSimpleName());
+  private final Logger log = Logger.getLogger(getClass().getSimpleName());
 
-  /** IBA IP address of management interface */
+  /**
+   * IBA IP address of management interface
+   */
   public abstract String endPoint();
 
   /**
@@ -67,24 +70,36 @@ public abstract class InfobloxClient {
    */
   public abstract String wapiVersion();
 
-  /** IBA user name */
+  /**
+   * IBA user name
+   */
   @Redacted
   public abstract String userName();
 
-  /** IBA user password */
+  /**
+   * IBA user password
+   */
   @Redacted
   public abstract String password();
 
-  /** IBA default view. Defaults to 'default`. */
+  /**
+   * IBA default view. Defaults to 'default`.
+   */
   public abstract String dnsView();
 
-  /** Checks if TLS certificate validation is enabled for communicating with Infoblox. */
+  /**
+   * Checks if TLS certificate validation is enabled for communicating with Infoblox.
+   */
   public abstract boolean tlsVerify();
 
-  /** Enable http curl logging for debugging. */
+  /**
+   * Enable http curl logging for debugging.
+   */
   public abstract boolean debug();
 
-  /** IBA WAPI connection/read/write timeout. */
+  /**
+   * IBA WAPI connection/read/write timeout.
+   */
   public abstract int timeout();
 
   private Infoblox infoblox;
@@ -98,7 +113,10 @@ public abstract class InfobloxClient {
    */
   private void init() throws GeneralSecurityException {
     log.info("Initializing " + toString());
-    Moshi moshi = new Moshi.Builder().add(JsonAdapterFactory.create()).build();
+    Moshi moshi = new Moshi.Builder()
+        .add(JsonAdapterFactory.create())
+        .add(new RefObject.JsonAdapter())
+        .build();
 
     TrustManager[] trustManagers = getTrustManagers();
     SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
@@ -141,7 +159,7 @@ public abstract class InfobloxClient {
     }
 
     if (debug()) {
-      CurlLoggingInterceptor logIntcp = new CurlLoggingInterceptor(s -> log.info(s));
+      CurlLoggingInterceptor logIntcp = new CurlLoggingInterceptor(log::info);
       okBuilder.addNetworkInterceptor(logIntcp);
     }
     OkHttpClient okHttp = okBuilder.build();
@@ -181,21 +199,23 @@ public abstract class InfobloxClient {
     } else {
       log.info("Skipping TLS certs verification.");
       trustMgrs =
-          new TrustManager[] {
-            new X509TrustManager() {
-              @Override
-              public void checkClientTrusted(
-                  java.security.cert.X509Certificate[] chain, String authType) {}
+          new TrustManager[]{
+              new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(
+                    java.security.cert.X509Certificate[] chain, String authType) {
+                }
 
-              @Override
-              public void checkServerTrusted(
-                  java.security.cert.X509Certificate[] chain, String authType) {}
+                @Override
+                public void checkServerTrusted(
+                    java.security.cert.X509Certificate[] chain, String authType) {
+                }
 
-              @Override
-              public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new java.security.cert.X509Certificate[] {};
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                  return new java.security.cert.X509Certificate[]{};
+                }
               }
-            }
           };
     }
     return trustMgrs;
@@ -214,7 +234,7 @@ public abstract class InfobloxClient {
     } else {
       Error err;
       String contentType = res.headers().get("Content-Type");
-      if (contentType != null && "application/json".equalsIgnoreCase(contentType)) {
+      if ("application/json".equalsIgnoreCase(contentType)) {
         err = errResConverter.convert(requireNonNull(res.errorBody()));
       } else {
         err = Error.create("Request failed, " + res.message(), res.code());
@@ -328,11 +348,11 @@ public abstract class InfobloxClient {
     return getHostRec(domainName)
         .stream()
         .map(Host::ref)
-        .filter(ref -> ref.contains(domainName))
+        .filter(ref -> ref.hasFqdn(domainName))
         .map(
             ref -> {
               try {
-                return exec(infoblox.deleteRef(ref)).result();
+                return exec(infoblox.deleteRef(ref.value())).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error deleting Host record ref: " + ref, ioe);
               }
@@ -394,11 +414,11 @@ public abstract class InfobloxClient {
     return getARec(domainName)
         .stream()
         .map(ARec::ref)
-        .filter(ref -> ref.contains(domainName))
+        .filter(ref -> ref.hasFqdn(domainName))
         .map(
             ref -> {
               try {
-                return exec(infoblox.deleteRef(ref)).result();
+                return exec(infoblox.deleteRef(ref.value())).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error deleting A record ref: " + ref, ioe);
               }
@@ -417,13 +437,13 @@ public abstract class InfobloxClient {
     return getARec(domainName)
         .stream()
         .map(ARec::ref)
-        .filter(ref -> ref.contains(domainName))
+        .filter(ref -> ref.hasFqdn(domainName))
         .map(
             ref -> {
               Map<String, String> req = new HashMap<>(1);
               req.put("name", newDomainName);
               try {
-                return exec(infoblox.modifyARec(ref, req)).result();
+                return exec(infoblox.modifyARec(ref.value(), req)).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error modifying A record ref: " + ref, ioe);
               }
@@ -432,6 +452,7 @@ public abstract class InfobloxClient {
   }
 
   ////// AAAA Record //////
+
   /**
    * Get IPv6 address records (AAAA) for the given domain name and search option.
    *
@@ -484,11 +505,11 @@ public abstract class InfobloxClient {
     return getAAAARec(domainName)
         .stream()
         .map(AAAA::ref)
-        .filter(ref -> ref.contains(domainName))
+        .filter(ref -> ref.hasFqdn(domainName))
         .map(
             ref -> {
               try {
-                return exec(infoblox.deleteRef(ref)).result();
+                return exec(infoblox.deleteRef(ref.value())).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error deleting AAAA record ref: " + ref, ioe);
               }
@@ -507,13 +528,13 @@ public abstract class InfobloxClient {
     return getAAAARec(domainName)
         .stream()
         .map(AAAA::ref)
-        .filter(ref -> ref.contains(domainName))
+        .filter(ref -> ref.hasFqdn(domainName))
         .map(
             ref -> {
               Map<String, String> req = new HashMap<>(1);
               req.put("name", newDomainName);
               try {
-                return exec(infoblox.modifyAAAARec(ref, req)).result();
+                return exec(infoblox.modifyAAAARec(ref.value(), req)).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error modifying AAAA record ref: " + ref, ioe);
               }
@@ -575,11 +596,11 @@ public abstract class InfobloxClient {
     return getCNameRec(aliasName)
         .stream()
         .map(CNAME::ref)
-        .filter(ref -> ref.contains(aliasName))
+        .filter(ref -> ref.hasFqdn(aliasName))
         .map(
             ref -> {
               try {
-                return exec(infoblox.deleteRef(ref)).result();
+                return exec(infoblox.deleteRef(ref.value())).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error deleting CNAME record ref: " + ref, ioe);
               }
@@ -598,13 +619,13 @@ public abstract class InfobloxClient {
     return getCNameRec(aliasName)
         .stream()
         .map(CNAME::ref)
-        .filter(ref -> ref.contains(aliasName))
+        .filter(ref -> ref.hasFqdn(aliasName))
         .map(
             ref -> {
               Map<String, String> req = new HashMap<>(1);
               req.put("name", newAliasName);
               try {
-                return exec(infoblox.modifyCNAMERec(ref, req)).result();
+                return exec(infoblox.modifyCNAMERec(ref.value(), req)).result();
               } catch (IOException ioe) {
                 throw new IllegalStateException("Error modifying A record ref: " + ref, ioe);
               }

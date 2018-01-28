@@ -6,6 +6,7 @@ import static org.xbill.DNS.Type.A;
 import static org.xbill.DNS.Type.AAAA;
 import static org.xbill.DNS.Type.CNAME;
 
+import com.oneops.infoblox.IBAEnvConfig;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,8 +21,8 @@ import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.Type;
 
 /**
- * Domain server query utility. When a specific name server is not specified, it will use the
- * operating system's default resolver, usually configured via the resolv.conf file. By default it
+ * Domain server query utility. When the name server is not specified, it will use the operating
+ * system's default resolver, usually configured via the <b>resolv.conf</b> file. By default it
  * queries the DNS root zone.
  *
  * @author Suresh G
@@ -29,7 +30,8 @@ import org.xbill.DNS.Type;
 public class Dig {
 
   /**
-   * Queries the DNS server for the given resource name and record type.
+   * Queries the DNS server ({@link IBAEnvConfig#nameServer()}) for the given resource name and
+   * record type.
    *
    * <p>Warning: Writing test cases depending too much on DNS resolution might break the test cases,
    * as it usually cached and take time to propagate the DNS entries.
@@ -41,7 +43,7 @@ public class Dig {
    */
   public static List<String> lookup(String fqdn, int queryType) throws IOException {
     Lookup dig = new Lookup(fqdn, queryType);
-    dig.setSearchPath(new String[] {domain()});
+    dig.setSearchPath(new String[]{domain()});
     dig.setResolver(new SimpleResolver(nameServer()));
 
     Record[] records = dig.run();

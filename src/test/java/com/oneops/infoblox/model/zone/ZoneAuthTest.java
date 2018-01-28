@@ -23,7 +23,7 @@ class ZoneAuthTest {
 
   private static InfobloxClient client;
 
-  private String zoneName = domain();
+  private final String zoneName = domain();
 
   @BeforeAll
   static void setUp() {

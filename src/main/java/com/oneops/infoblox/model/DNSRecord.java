@@ -14,7 +14,9 @@ public enum DNSRecord {
    */
   A(1, "Address record"),
 
-  /** Delegates a DNS zone to use the given authoritative name servers. */
+  /**
+   * Delegates a DNS zone to use the given authoritative name servers.
+   */
   NS(2, "Name server record"),
 
   /**
@@ -29,10 +31,14 @@ public enum DNSRecord {
    */
   PTR(12, "Pointer record"),
 
-  /** Maps a domain name to a list of message transfer agents (MTA) for that domain. */
+  /**
+   * Maps a domain name to a list of message transfer agents (MTA) for that domain.
+   */
   MX(15, "Mail exchange record"),
 
-  /** For arbitrary human/machine readable text in a DNS record. */
+  /**
+   * For arbitrary human/machine readable text in a DNS record.
+   */
   TXT(16, "Text record"),
 
   /**
@@ -47,16 +53,24 @@ public enum DNSRecord {
    */
   SRV(33, "Service locator"),
 
-  /** Stores PKIX, SPKI, PGP, etc. */
+  /**
+   * Stores PKIX, SPKI, PGP, etc.
+   */
   CERT(37, "Certificate record"),
 
-  /** Can be used for publishing mappings from host-names to URIs. */
+  /**
+   * Can be used for publishing mappings from host-names to URIs.
+   */
   URI(256, "Uniform Resource Identifier");
 
-  /** DNS resource type id. */
+  /**
+   * DNS resource type id.
+   */
   private final int id;
 
-  /** Resource type description. */
+  /**
+   * Resource type description.
+   */
   private final String desc;
 
   DNSRecord(int id, String desc) {

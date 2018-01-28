@@ -13,9 +13,9 @@ import com.oneops.infoblox.util.Dig;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xbill.DNS.Type;
 
 /**
@@ -27,10 +27,6 @@ import org.xbill.DNS.Type;
 class CNAMETest {
 
   private static InfobloxClient client;
-
-  private String canonicalName = "oneops-test." + domain();
-  private String alias = "oneops-test-cname1." + domain();
-  private String newAlias = "oneops-test-cname1-mod." + domain();
 
   @BeforeAll
   static void setUp() {
@@ -45,20 +41,22 @@ class CNAMETest {
             .build();
   }
 
-  /** Make sure to clean the CNAME record before each test. */
-  @BeforeEach
-  void clean() throws IOException {
+  @ParameterizedTest
+  @ValueSource(strings = {"oneops-test", "*.oneops-test"})
+  void create(String prefix) throws IOException {
+
+    final String canonicalName = String.format("%s.%s", prefix, domain());
+    final String alias = String.format("%s-cname1.%s", prefix, domain());
+    final String newAlias = String.format("%s-cname1-mod.%s", prefix, domain());
+
+    // Clean it.
     client.deleteCNameRec(alias);
     client.deleteCNameRec(newAlias);
-  }
 
-  @Test
-  void create() throws IOException {
     List<CNAME> rec = client.getCNameRec(alias);
     assertTrue(rec.isEmpty());
 
     // Creates CNAME Record
-    System.out.println("Creating alias " + alias + " for " + canonicalName);
     CNAME cname = client.createCNameRec(alias, canonicalName);
     assertEquals(cname.canonical(), canonicalName);
     // DNS lookup returns fqdn with dot at the end (as per the RFC).
@@ -67,7 +65,7 @@ class CNAMETest {
 
     // Modify CNAME Record
     List<CNAME> modCName = client.modifyCNameRec(alias, newAlias);
-    assertTrue(modCName.size() == 1);
+    assertEquals(1, modCName.size());
     // Now new Fqdn should resolve the IP.
     assertEquals(expected, Dig.lookup(newAlias, Type.CNAME));
 
@@ -77,8 +75,8 @@ class CNAMETest {
 
     // Delete CNAME Record
     List<String> delCName = client.deleteCNameRec(alias);
-    assertTrue(delCName.size() == 0);
+    assertEquals(0, delCName.size());
     delCName = client.deleteCNameRec(newAlias);
-    assertTrue(delCName.size() == 1);
+    assertEquals(1, delCName.size());
   }
 }

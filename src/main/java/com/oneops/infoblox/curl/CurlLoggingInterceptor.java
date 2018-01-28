@@ -39,7 +39,9 @@ public class CurlLoggingInterceptor implements Interceptor {
     this.logger = logger;
   }
 
-  /** Set any additional curl command options (see 'curl --help'). */
+  /**
+   * Set any additional curl command options (see 'curl --help').
+   */
   public void curlOptions(String curlOptions) {
     this.curlOptions = curlOptions;
   }
@@ -86,7 +88,7 @@ public class CurlLoggingInterceptor implements Interceptor {
     }
 
     curlCmd.append((compressed) ? " --compressed " : " ").append(request.url());
-    logger.log(String.format("(cURL) --> %s", curlCmd.toString()));
+    logger.log(String.format("[cURL] --> %s", curlCmd.toString()));
     return chain.proceed(request);
   }
 }

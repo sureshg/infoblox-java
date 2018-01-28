@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
  */
 public class IPAddrs {
 
-  private static Pattern IPv4 =
+  private static final Pattern IPv4 =
       Pattern.compile(
           "^((25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})$");
 
-  private static Pattern IPv6 = Pattern.compile("^([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}$");
+  private static final Pattern IPv6 = Pattern.compile("^([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}$");
 
   /**
    * Checks that the given address is of IPv4 format, else throws an IllegalArgumentException.

@@ -19,7 +19,9 @@ public abstract class Result<T> {
     return new AutoValue_Result<>(result);
   }
 
-  /** Json adapter for {@link Result} type, used by Moshi for JSON [de]serialization. */
+  /**
+   * Json adapter for {@link Result} type, used by Moshi for JSON [de]serialization.
+   */
   public static <T> JsonAdapter<Result<T>> jsonAdapter(Moshi moshi, Type[] types) {
     return new AutoValue_Result.MoshiJsonAdapter<>(moshi, types);
   }

@@ -1,6 +1,8 @@
 package com.oneops.infoblox.model.host;
 
 import com.google.auto.value.AutoValue;
+import com.oneops.infoblox.model.ref.Ref;
+import com.oneops.infoblox.model.ref.RefObject;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -13,8 +15,9 @@ import com.squareup.moshi.Moshi;
 @AutoValue
 public abstract class Ipv4Addrs {
 
+  @RefObject
   @Json(name = "_ref")
-  public abstract String ref();
+  public abstract Ref ref();
 
   public abstract String host();
 
@@ -26,7 +29,7 @@ public abstract class Ipv4Addrs {
 
   public static Ipv4Addrs create(
       String ref, String host, String ipv4Addr, boolean configureForDhcp) {
-    return new AutoValue_Ipv4Addrs(ref, host, ipv4Addr, configureForDhcp);
+    return new AutoValue_Ipv4Addrs(Ref.of(ref), host, ipv4Addr, configureForDhcp);
   }
 
   public static JsonAdapter<Ipv4Addrs> jsonAdapter(Moshi moshi) {

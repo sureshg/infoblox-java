@@ -28,8 +28,8 @@ class ARecordTest {
 
   private static InfobloxClient client;
 
-  private String fqdn = "oneops-test-a1." + domain();
-  private String newFqdn = "oneops-test-a1-mod." + domain();
+  private final String fqdn = "oneops-test-a1." + domain();
+  private final String newFqdn = "oneops-test-a1-mod." + domain();
 
   @BeforeAll
   static void setUp() {
@@ -44,7 +44,9 @@ class ARecordTest {
             .build();
   }
 
-  /** Make sure to clean the A record before each test. */
+  /**
+   * Make sure to clean the A record before each test.
+   */
   @BeforeEach
   void clean() throws IOException {
     client.deleteARec(fqdn);
@@ -64,14 +66,14 @@ class ARecordTest {
 
     // Modify A Record
     List<ARec> modifedARec = client.modifyARec(fqdn, newFqdn);
-    assertTrue(modifedARec.size() == 1);
+    assertEquals(1, modifedARec.size());
     // Now new Fqdn should resolve the IP.
     assertEquals(Collections.singletonList(ip), Dig.lookup(newFqdn, Type.A));
 
     // Delete A Record
     List<String> delARec = client.deleteARec(fqdn);
-    assertTrue(delARec.size() == 0);
+    assertEquals(0, delARec.size());
     delARec = client.deleteARec(newFqdn);
-    assertTrue(delARec.size() == 1);
+    assertEquals(1, delARec.size());
   }
 }

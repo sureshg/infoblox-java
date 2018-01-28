@@ -32,7 +32,7 @@ class HostRecTest {
 
   private static InfobloxClient client;
 
-  private String fqdn = "oneops-test-host1." + domain();
+  private final String fqdn = "oneops-test-host1." + domain();
 
   @BeforeAll
   static void setUp() {
@@ -47,7 +47,9 @@ class HostRecTest {
             .build();
   }
 
-  /** Make sure to clean the host record before each test. */
+  /**
+   * Make sure to clean the host record before each test.
+   */
   @BeforeEach
   void clean() throws IOException {
     client.deleteHostRec(fqdn);
